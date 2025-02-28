@@ -45,17 +45,17 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
             RedCode, -- The RED Code for identification of the entity. 
             parspread, -- The par spread associated to the contributed CDS curve.
             convspreard, -- The conversion spread associated to the contributed CDS curve.
-            tenor
+            tenor,
+            tier, -- SNRFOR is Senior Unsecured Debt 
+            country, 
+            compositepricerating,
+            impliedrating      
         FROM
-            {table_name} a
+            {table_name} AS a
         WHERE
-            -- a.country = 'United States'
-            a.currency = 'USD' AND
-            a.docclause LIKE 'XR%%' AND 
-                -- The documentation clause. Values are: MM (Modified
-                -- Modified Restructuring), MR (Modified Restructuring), CR
-                -- (Old Restructuring), XR (No Restructuring).
-            a.tenor IN ('1Y', '3Y', '5Y', '7Y', '10Y')
+            (a.country = 'United States') AND
+            (a.currency = 'USD') AND
+            (a.tenor IN ('1Y', '3Y', '5Y', '7Y', '10Y'))
         """
         cds_data[year] = db.raw_sql(query, date_cols=["date"])
     return cds_data
