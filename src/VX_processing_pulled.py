@@ -10,6 +10,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.interpolate import CubicSpline
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -47,38 +48,8 @@ for the dataframe of CDS:
 [date, parspread, tenor, firm_isin]
 """
 
-def calc_FR_values(df_bond):
-    '''
-    df_bond: dataframe of bonds with columns
-    [date, offering_yield, treasury_spread, tenor, firm_isin]
 
-    assuming treasury spread = treasury_yield - ytm
-
-    output:
-    a dataframe of the original bond data with the FR column and yield column added
-    '''
-
-    def calc_FR(row):
-        mask1 = df_sofr.date == row.date
-        if swap:
-            mask2 = df_sofr.tenor == row.tenor
-            try:
-                return row.ytm - df_sofr[mask1 & mask2].iloc[0]['rate']
-            except:
-                print(f'There was no SOFR data for tenor {row.tenor} and date {row.date}.')
-        else:
-            try: 
-                return row.ytm - df_sofr[mask1].iloc[0]['rate']
-            except:
-                print(f'There was no SOFR data for date {row.date}')
-
-        return np.NaN
-    
-    df_bond['FR'] = df_bond.apply(lambda row: calc_FR(row), axis=1)
-
-    return df_bond
-
-def calc_cb_spread(df_cds, df_bond, df_treas):
+def calc_cb_spread(df_cds, df_bond):
     '''
     df_cds: dataframe of cds par spreads with columns
     [date, firm, parspread, tenor]
@@ -94,16 +65,52 @@ def calc_cb_spread(df_cds, df_bond, df_treas):
     rfr_arb is the final product
     '''
 
-    df_merged = pd.merge(df_fr, df_cds, on=["date", "firm", "tenor"], how="inner")
-    df_merged['CB'] = df_merged['parspread'] - df_merged['FR']
+    df_merge = df_bond.merge(df_cds, on=["date", FIRM_ID, "tenor"], how='left')
 
-    df_treas.rename(columns={'ytm':'treas ytm'}, inplace=True)
+
+    def interpolate_parspread(df):
+        
+        for (date, firm), group in df.groupby(["date", FIRM_ID]):
+            group = group.sort_values(by="tenor")
+            
+            known_tenors = group["tenor"][group["parspread"].notna()]
+            known_spreads = group["parspread"][group["parspread"].notna()]
+
+            missing_tenors = group["tenor"][group["parspread"].isna()]
+            
+            if len(known_tenors) > 1 and not missing_tenors.empty:
+                
+                spline = CubicSpline(known_tenors, known_spreads, bc_type='natural')
+                interpolated_spreads = spline(missing_tenors)
+                
+                for tenor, spread in zip(missing_tenors, interpolated_spreads):
+                    df.loc[(df["date"] == date) & (df["firm"] == firm) & (df["tenor"] == tenor), "parspread"] = spread
+            else:
+                # if the parspread can't be interpolated we just move on
+                continue
+        
+        return df
+
+    df_merge = interpolate_parspread(df_merge)
+
+    df_merge = df_merge.dropna()
     
-    df_fin = pd.merge(df_merged, df_treas, on=['date', 'tenor'], how='inner')
+    # assume that the treasury spread is positive (corp - treas)
+    # corporates will be discounted more heavily compared to treasuries so they should have higher yields
+    df_merge['CB'] = df_merge['parspread'] - df_merge['treasury_spread']
+    df_merge['treas_ytm'] = df_merge['offering_yield'] - df_merge['treasury_spread']
+    df_merge['rfr'] = df_merge['treas_ytm'] - df_merge['CB']
 
-    df_fin['rfr_arb'] = df_fin['CB'].abs() - df_fin['treas ytm']
+    return df_merge
 
-    return df_fin
+def generate_graph_rfr(df):
+    '''
+    assume input has original df_merge format
+    we want to graph the rfr column
+    '''
+    
+
+    return
     
 
 
