@@ -47,9 +47,7 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
             convspreard, -- The conversion spread associated to the contributed CDS curve.
             tenor,
             tier, -- SNRFOR is Senior Unsecured Debt 
-            country, 
-            compositepricerating,
-            impliedrating      
+            country
         FROM
             {table_name} AS a
         WHERE
@@ -101,5 +99,5 @@ def load_cds_data(data_dir=DATA_DIR, subfolder=SUBFOLDER):
 
 if __name__ == "__main__":
     combined_df = pull_cds_data(wrds_username=WRDS_USERNAME)
-    (DATA_DIR / SUBFOLDER).mkdir(parents=True, exist_ok=True)
-    combined_df.to_parquet(DATA_DIR / SUBFOLDER / "markit_cds.parquet")
+    (DATA_DIR).mkdir(parents=True, exist_ok=True)
+    combined_df.to_parquet(DATA_DIR / "markit_cds.parquet")

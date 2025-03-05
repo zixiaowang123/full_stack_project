@@ -59,46 +59,23 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
     bond_data = db.raw_sql(query, date_cols=["date"])
     return bond_data
 
-
-def combine_bond_data(cds_data: dict) -> pd.DataFrame:
+def filter_data(data):
     """
-    Combines the bond data stored in a dictionary into a single DataFrame.
-
-    For each key-value pair in `cds_data`, a new column "year" is added to the
-    DataFrame containing the value of the key (i.e., the year). Then, all
-    DataFrames are concatenated.
-
-    Args:
-        cds_data (dict): A dictionary where each key is a year and its value is
-        a DataFrame with CDS data for that year.
-
-    Returns:
-        pd.DataFrame: A single concatenated DataFrame with an additional "year"
-        column.
+    Filters the bonds based on the required filters in the paper
     """
-    dataframes = []
-    for year, df in cds_data.items():
-        # Create a copy to avoid modifying the original DataFrame
-        df_with_year = df.copy()
-        df_with_year["year"] = year
-        dataframes.append(df_with_year)
+    bonds = data[data["amount_outstanding"] >= 10000]
+    bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity"] - bonds.loc[:,"offering_date"]
+    bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(',').str[0]
+    bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(' ').str[0]
+    bonds.loc[:,"maturity_time_frame"] = pd.to_numeric(bonds.loc[:,"maturity_time_frame"], errors='coerce') / 365.25
+    more_bonds = bonds[bonds["maturity_time_frame"] >= 1]
+    more_bonds['maturity_time_frame'] = more_bonds['maturity_time_frame'].round().astype(int)
+    more_bonds = more_bonds[more_bonds['maturity_time_frame'] <= 10]
 
-    combined_df = pd.concat(dataframes, ignore_index=True)
-    return combined_df
-
-
-def pull_bond_data(wrds_username=WRDS_USERNAME):
-    bond_data = get_bond_data_as_dict(wrds_username=wrds_username)
-    combined_df = combine_bond_data(bond_data)
-    return combined_df
-
-
-def load_bond_data(data_dir=DATA_DIR, subfolder=SUBFOLDER):
-    path = data_dir / subfolder / "mergent_bond.parquet"
-    return pd.read_parquet(path)
-
+    return more_bonds
 
 if __name__ == "__main__":
     combined_df = get_bond_data_as_dict(wrds_username=WRDS_USERNAME)
-    (DATA_DIR / SUBFOLDER).mkdir(parents=True, exist_ok=True)
-    combined_df.to_parquet(DATA_DIR / SUBFOLDER / "mergent_bond.parquet")
+    filered = filter_data(combined_df)
+    (DATA_DIR).mkdir(parents=True, exist_ok=True)
+    filered.to_parquet(DATA_DIR / "mergent_bond.parquet")
