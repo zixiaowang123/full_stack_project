@@ -46,7 +46,9 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
         isin, -- The International Securities Identification Number associated with this issue.
         putable, -- Put option flag.
         convertible, -- Flag indicating the issue can be converted to the common stock (or other security).
-        security_level -- SEN is Senior Unsecured Debt 
+        security_level, -- SENS is Senior Unsecured Debt i think
+        offering_yield, -- Yield to maturity at the time of issuance.
+        treasury_spread -- The difference between the yield of the benchmark treasury issue and the issue's offering yield expressed in basis points.
 
     FROM
         {table_name} AS a
