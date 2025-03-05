@@ -21,6 +21,8 @@ pull_public_repo_data.series_descriptions
 
 # dataframe processing
 
+FIRM_ID = 'firm_isin'
+
 '''
 formatting I need:
 
@@ -35,21 +37,25 @@ formula
 CB = CDS - FR
 '''
 
-def calc_FR_values(df_bond, df_sofr, swap=True):
+"""
+additional comments:
+for the dataframe of BONDS:
+columns:
+[date, offering_yield, treasury_spread, tenor, firm_isin]
+
+for the dataframe of CDS:
+[date, parspread, tenor, firm_isin]
+"""
+
+def calc_FR_values(df_bond):
     '''
     df_bond: dataframe of bonds with columns
-    [date, firm, tenor, ytm]
+    [date, offering_yield, treasury_spread, tenor, firm_isin]
 
-    df_sofr: dataframe containing sofr data
-    if swap is true, it will have columns
-    [date, tenor, rate]
-    if swap is false, it will have columns
-    [date, rate]
-    in this case, it will only be SOFR rate values instead
-    of tenor matched swaps
+    assuming treasury spread = treasury_yield - ytm
 
     output:
-    a dataframe of the original bond data with the FR column added  
+    a dataframe of the original bond data with the FR column and yield column added
     '''
 
     def calc_FR(row):
@@ -72,14 +78,12 @@ def calc_FR_values(df_bond, df_sofr, swap=True):
 
     return df_bond
 
-def calc_cb_spread(df_cds, df_fr, df_treas):
+def calc_cb_spread(df_cds, df_bond, df_treas):
     '''
     df_cds: dataframe of cds par spreads with columns
     [date, firm, parspread, tenor]
-    df_fr: dataframe of fr spread
-    [date, firm, ytm, tenor, FR]
-    df_treas: dataframe of treasuries
-    [date, tenor, ytm]
+    df_bond: dataframe of fr spread
+    [date, offering_yield, treasury_spread, tenor, firm_isin]
 
     output: a dataframe containing the parspread, fr, and the resulting CB spread
     defined as 
