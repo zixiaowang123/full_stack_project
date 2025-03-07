@@ -1,0 +1,83 @@
+"""
+This scripts pulls bond data from WRDS.
+Code by adjusted by Alex Wang
+"""
+
+# Add src directory to Python path
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+import os
+
+import pandas as pd
+import wrds
+
+from settings import config
+
+# Set SUBFOLDER to the folder containing this file
+SUBFOLDER = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = Path(config("DATA_DIR"))
+WRDS_USERNAME = config("WRDS_USERNAME")
+
+
+def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
+    """
+    Connects to a WRDS (Wharton Research Data Services) database and fetches bond data from WRDS
+    on the the table named `wrdsapps_bondret.bondret`.
+
+    Returns:
+        dict: A dictionary where each key is a year from 2001 to 2023 and each value is a DataFrame containing
+        the date, ticker, and parspread for that year.
+    """
+    db = wrds.Connection(wrds_username=wrds_username)
+    bond_data = {}
+
+    table_name = "wrdsapps_bondret.bondret"
+    query = f"""
+    SELECT
+        offering_date, -- The date the issue was originally offered.
+        company_symbol, -- Company Symbol (issuer stock ticker).
+        maturity, -- Date that the issue's principal is due for repayment.
+        amount_outstanding, -- The amount of the issue remaining outstanding.
+        security_level, -- SEN is Senior Unsecured Debt i think
+        date, -- Monthly Date
+        yield, -- Yield to maturity at the time of issuance.
+        cusip,
+        isin,
+        rating_class, -- Combined Rating Class: 0.IG or 1.HY
+        conv, -- Flag Convertible (1 or 0)
+        offering_price, -- Offering Price
+        price_eom, -- Price-End of Month
+        t_spread -- Avg Bid/Ask Spread
+    FROM
+        {table_name} AS a
+    WHERE
+        (a.isin != '')
+    """
+    #        (a.conv = '0') AND
+    bond_data = db.raw_sql(query, date_cols=["date"])
+    return bond_data
+
+def filter_data(data):
+    """
+    Filters the bonds based on the required filters in the paper
+    """
+    bonds = data[data["amount_outstanding"] >= 10000]
+    bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity"] - bonds.loc[:,"offering_date"]
+    bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(',').str[0]
+    bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(' ').str[0]
+    bonds.loc[:,"maturity_time_frame"] = pd.to_numeric(bonds.loc[:,"maturity_time_frame"], errors='coerce') / 365.25
+    bonds = bonds.dropna(subset=['maturity_time_frame'])
+    bonds['maturity_time_frame'] = bonds['maturity_time_frame'].round().astype(int)
+    
+    mask_g1 = bonds["maturity_time_frame"] >= 1
+    mask_l10 = bonds['maturity_time_frame'] <= 10
+
+    return bonds[mask_g1 & mask_l10]
+
+if __name__ == "__main__":
+    combined_df = get_bond_data_as_dict(wrds_username=WRDS_USERNAME)
+    filered = filter_data(combined_df)
+    (DATA_DIR).mkdir(parents=True, exist_ok=True)
+    filered.to_parquet(DATA_DIR / "wrds_bond.parquet")
