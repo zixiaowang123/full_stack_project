@@ -53,9 +53,10 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
     FROM
         {table_name} AS a
     WHERE
-        (a.isin != '')
-    """
-    #        (a.conv = '0') AND
+        (a.isin != '') AND
+        (a.conv = '0') AND
+        (security_level = 'SEN')
+    """        
     bond_data = db.raw_sql(query, date_cols=["date"])
     return bond_data
 
@@ -74,7 +75,7 @@ def filter_data(data):
     mask_g1 = bonds["maturity_time_frame"] >= 1
     mask_l10 = bonds['maturity_time_frame'] <= 10
 
-    return bonds[mask_g1 & mask_l10]
+    return bonds[mask_g1 & mask_l10].set_index("date")
 
 if __name__ == "__main__":
     combined_df = get_bond_data_as_dict(wrds_username=WRDS_USERNAME)
