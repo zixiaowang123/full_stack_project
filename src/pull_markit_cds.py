@@ -44,7 +44,7 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
             ticker, -- The Markit ticker for the organization.
             RedCode, -- The RED Code for identification of the entity. 
             parspread, -- The par spread associated to the contributed CDS curve.
-            convspreard, -- The conversion spread associated to the contributed CDS curve.
+            avrating, -- Rating value according to rating agencies AAA etc.
             tenor,
             tier, -- SNRFOR is Senior Unsecured Debt 
             country
@@ -53,7 +53,8 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
         WHERE
             (a.country = 'United States') AND
             (a.currency = 'USD') AND
-            (a.tenor IN ('1Y', '3Y', '5Y', '7Y', '10Y'))
+            (a.tenor IN ('1Y', '3Y', '5Y', '7Y', '10Y')) AND
+            (a.tier = 'SNRFOR')
         """
         cds_data[year] = db.raw_sql(query, date_cols=["date"])
     return cds_data
