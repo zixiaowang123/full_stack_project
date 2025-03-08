@@ -71,7 +71,9 @@ def filter_data(data):
     bonds.loc[:,"maturity_time_frame"] = pd.to_numeric(bonds.loc[:,"maturity_time_frame"], errors='coerce') / 365.25
     bonds = bonds.dropna(subset=['maturity_time_frame'])
     bonds['maturity_time_frame'] = bonds['maturity_time_frame'].round().astype(int)
-    
+    bonds['rating'] = bonds.loc[:,"rating_class"].astype(str).str.split('.').str[0].astype(int)
+    bonds.drop('rating_class', axis=1, inplace=True)
+
     mask_g1 = bonds["maturity_time_frame"] >= 1
     mask_l10 = bonds['maturity_time_frame'] <= 10
 
