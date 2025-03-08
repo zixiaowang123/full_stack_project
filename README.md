@@ -3,7 +3,10 @@ Example Project Using the ChartBook Template
 
 ## About this project
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+This project is part of the Winter 2025 Full Stack Quantitative Finance course taught by Professor Jeremy Bejarano.
+
+We are replicating the implied arbitrage spread from CDS and corporate bonds of high yield and investment grade.
+
 
 ## Quick Start
 
@@ -12,7 +15,7 @@ package manager installed (e.g., via Anaconda). However, I recommend using `mamb
 (https://github.com/conda-forge/miniforge) as it is faster and more lightweight than `conda`. Second, you 
 must have TexLive (or another LaTeX distribution) installed on your computer and available in your path.
 You can do this by downloading and 
-installing it from here ([windows](https://tug.org/texlive/windows.html#install) 
+installing it from here ([windows](https://tug.org/texlive/windows.html#install)
 and [mac](https://tug.org/mactex/mactex-download.html) installers).
 Having done these things, open a terminal and navigate to the root directory of the project and create a 
 conda environment using the following command:
