@@ -67,7 +67,7 @@ MANUAL_DATA_DIR = config("MANUAL_DATA_DIR")
 OUTPUT_DIR = config("OUTPUT_DIR")
 OS_TYPE = config("OS_TYPE")
 PUBLISH_DIR = config("PUBLISH_DIR")
-USER = config("USER")
+#USER = config("USER")
 
 ## Helpers for handling Jupyter Notebook tasks
 # fmt: off
