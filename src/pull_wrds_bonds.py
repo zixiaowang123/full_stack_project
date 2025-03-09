@@ -49,7 +49,8 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
         conv, -- Flag Convertible (1 or 0)
         offering_price, -- Offering Price
         price_eom, -- Price-End of Month
-        t_spread -- Avg Bid/Ask Spread
+        t_spread, -- Avg Bid/Ask Spread
+        principal_amt -- The face or par value of a single bond (i.e., the sum that is to be paid at maturity, usually $1000).
     FROM
         {table_name} AS a
     WHERE
