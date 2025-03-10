@@ -5,6 +5,7 @@ Code by Kausthub Kesheva
 
 # Add src directory to Python path
 import sys
+import json
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -22,6 +23,9 @@ WRDS_USERNAME = config("WRDS_USERNAME")
 START_DATE = pd.Timestamp("1925-01-01")
 END_DATE = pd.Timestamp("2024-01-01")
 
+with open(f"{DATA_DIR}/red_code_dict.json", "r") as file:
+    red_code_dict = json.load(file)
+
 
 def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
     """
@@ -36,13 +40,15 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
     """
     db = wrds.Connection(wrds_username=wrds_username)
     cds_data = {}
-    for year in range(2001, 2010):  # Loop from 2001 to 2005
+
+
+    for year in range(2002, 2012):  # Loop from 2002 to 2011
         table_name = f"markit.CDS{year}"  # Generate table name dynamically
+        codes = ', '.join(f"'{code}'" for code in red_code_dict[str(year)])
         query = f"""
         SELECT
             date, -- The date on which points on a curve were calculated
             ticker, -- The Markit ticker for the organization.
-            RedCode, -- The RED Code for identification of the entity. 
             parspread, -- The par spread associated to the contributed CDS curve.
             avrating, -- Rating value according to rating agencies AAA etc.
             tenor,
@@ -54,7 +60,8 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
             (a.country = 'United States') AND
             (a.currency = 'USD') AND
             (a.tenor IN ('1Y', '3Y', '5Y', '7Y', '10Y')) AND
-            (a.tier = 'SNRFOR')
+            (a.tier = 'SNRFOR') AND
+            (a.RedCode IN ({codes}))
         """
         cds_data[year] = db.raw_sql(query, date_cols=["date"])
     return cds_data
@@ -101,4 +108,4 @@ def load_cds_data(data_dir=DATA_DIR, subfolder=SUBFOLDER):
 if __name__ == "__main__":
     combined_df = pull_cds_data(wrds_username=WRDS_USERNAME)
     (DATA_DIR).mkdir(parents=True, exist_ok=True)
-    combined_df.to_parquet(DATA_DIR / "markit_cds.parquet")
+    combined_df.to_parquet(DATA_DIR / "markit_cds_1.parquet")

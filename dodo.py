@@ -125,8 +125,8 @@ def task_pull_data():
         "./src/pull_wrds_bonds.py",
         "./src/pull_mergent_bonds.py",
         "./src/pull_treasury_rates.py",
-        "./src/pull_markit_cds_00_10.py",
-        "./src/pull_markit_cds_11_24.py",
+        "./src/pull_markit_cds_1.py",
+        "./src/pull_markit_cds_2.py",
     ]
     targets = [
         DATA_DIR / "RED_and_ISIN_mapping.parquet",
@@ -134,8 +134,8 @@ def task_pull_data():
         DATA_DIR / "mergent_bond.parquet",
         DATA_DIR / "monthly_ts_data.parquet",
         DATA_DIR / "issue_data.parquet.parquet",
-        DATA_DIR / "markit_cds_00_10.parquet",
-        DATA_DIR / "markit_cds_11_24.parquet",
+        DATA_DIR / "markit_cds_1.parquet",
+        DATA_DIR / "markit_cds_2.parquet",
     ]
 
     return {
@@ -145,8 +145,8 @@ def task_pull_data():
             "ipython ./src/pull_wrds_bonds.py",
             "ipython ./src/pull_mergent_bonds.py",
             "ipython ./src/pull_treasury_rates.py",
-            "ipython ./src/pull_markit_cds_00_10.py",
-            "ipython ./src/pull_markit_cds_11_24.py",
+            "ipython ./src/pull_markit_cds_1.py",
+            "ipython ./src/pull_markit_cds_2.py",
         ],
         "targets": targets,
         "file_dep": file_dep,
