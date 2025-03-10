@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import os
 
 import pandas as pd
+import numpy as np
 import wrds
 
 from settings import config
@@ -56,7 +57,8 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
     WHERE
         (a.isin != '') AND
         (a.conv = '0') AND
-        (security_level = 'SEN')
+        (a.security_level = 'SEN') AND
+        (a.principal_amt > 10)
     """        
     bond_data = db.raw_sql(query, date_cols=["date"])
     return bond_data
@@ -65,7 +67,7 @@ def filter_data(data):
     """
     Filters the bonds based on the required filters in the paper
     """
-    bonds = data[data["amount_outstanding"] >= 10000]
+    bonds = data[data["amount_outstanding"] >= 100000]
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity"] - bonds.loc[:,"offering_date"]
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(',').str[0]
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(' ').str[0]
@@ -74,11 +76,15 @@ def filter_data(data):
     bonds['maturity_time_frame'] = bonds['maturity_time_frame'].round().astype(int)
     bonds['rating'] = bonds.loc[:,"rating_class"].astype(str).str.split('.').str[0].astype(int)
     bonds.drop('rating_class', axis=1, inplace=True)
+  
+    #bonds = bonds[(bonds['price_eom'] != 0) & ((bonds['price_eom'] / bonds['principal_amt']) >= 0.5)]
 
     mask_g1 = bonds["maturity_time_frame"] >= 1
     mask_l10 = bonds['maturity_time_frame'] <= 10
+    mask_yield_0 = bonds['yield'] > 0
+    mask_yield_05 = bonds['yield'] < 0.5
 
-    return bonds[mask_g1 & mask_l10].set_index("date")
+    return bonds[mask_g1 & mask_l10 & mask_yield_0 & mask_yield_05].set_index("date")
 
 if __name__ == "__main__":
     combined_df = get_bond_data_as_dict(wrds_username=WRDS_USERNAME)
