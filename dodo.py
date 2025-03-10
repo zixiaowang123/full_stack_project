@@ -116,8 +116,8 @@ def task_config():
     }
 
 
-#NEED TO ADJUST THIS TO PULL OUR PARQUETS EVENTUALLY
-def task_pull_data():
+#DATA PULL TAKES FOREVER, UNCOMMENT IF NEEDED
+'''def task_pull_data():
     """ """
     file_dep = [
         "./src/settings.py",
@@ -158,40 +158,9 @@ def task_pull_data():
         # But this one wont.
         # Use doit forget --all to redo all tasks. Use doit clean
         # to clean and forget the cheaper tasks.
-    }
+    }'''
 
-
-##############################$
-## Demo: Other misc. data pulls
-##############################$
-# def task_pull_other():
-#     """ """
-#     file_dep = [
-#         "./src/pull_bloomberg.py",
-#         "./src/pull_CRSP_Compustat.py",
-#         "./src/pull_CRSP_stock.py",
-#         "./src/pull_fed_yield_curve.py",
-#         ]
-#     file_output = [
-#         "bloomberg.parquet",
-#         "CRSP_Compustat.parquet",
-#         "CRSP_stock.parquet",
-#         "fed_yield_curve.parquet",
-#         ]
-#     targets = [DATA_DIR / file for file in file_output]
-
-#     return {
-#         "actions": [
-#             "ipython ./src/pull_bloomberg.py",
-#             "ipython ./src/pull_CRSP_Compustat.py",
-#             "ipython ./src/pull_CRSP_stock.py",
-#             "ipython ./src/pull_fed_yield_curve.py",
-#         ],
-#         "targets": targets,
-#         "file_dep": file_dep,
-#         "clean": [],  # Don't clean these files by default.
-#     }
-
+'''
 notebook_tasks = {
     "01_example_notebook_interactive.ipynb": {
         "file_dep": [],
@@ -268,7 +237,7 @@ def task_run_notebooks():
                 *notebook_tasks[notebook]["targets"],
             ],
             "clean": True,
-        }
+        }'''
 # fmt: on
 
 
@@ -323,7 +292,7 @@ def task_compile_latex_docs():
         "file_dep": file_dep,
         "clean": True,
     }
-
+'''
 notebook_sphinx_pages = [
     "./docs/notebooks/EX_" + notebook.split(".")[0] + ".html"
     for notebook in notebook_tasks.keys()
@@ -356,7 +325,7 @@ def task_compile_sphinx_docs():
         "file_dep": file_dep,
         "task_dep": ["run_notebooks",],
         "clean": True,
-    }
+    }'''
 
 
 ###############################################################
