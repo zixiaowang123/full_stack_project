@@ -58,7 +58,8 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
         (a.isin != '') AND
         (a.conv = '0') AND
         (a.security_level = 'SEN') AND
-        (a.principal_amt > 10)
+        (a.principal_amt > 10) AND
+        (a.amount_outstanding > 99999)
     """        
     bond_data = db.raw_sql(query, date_cols=["date"])
     return bond_data
@@ -67,7 +68,8 @@ def filter_data(data):
     """
     Filters the bonds based on the required filters in the paper
     """
-    bonds = data[data["amount_outstanding"] >= 100000]
+    #bonds = data[data["amount_outstanding"] >= 100000]
+    bonds = data
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity"] - bonds.loc[:,"offering_date"]
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(',').str[0]
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(' ').str[0]
@@ -83,8 +85,10 @@ def filter_data(data):
     mask_l10 = bonds['maturity_time_frame'] <= 10
     mask_yield_0 = bonds['yield'] > 0
     mask_yield_05 = bonds['yield'] < 0.5
+    mask_eom50 = bonds['price_eom'] > 50
+    mask_eom150 = bonds['price_eom'] < 150
 
-    return bonds[mask_g1 & mask_l10 & mask_yield_0 & mask_yield_05].set_index("date")
+    return bonds[mask_g1 & mask_l10 & mask_yield_0 & mask_yield_05 & mask_eom50 & mask_eom150].set_index("date")
 
 if __name__ == "__main__":
     combined_df = get_bond_data_as_dict(wrds_username=WRDS_USERNAME)
