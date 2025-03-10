@@ -192,44 +192,6 @@ def task_pull_data():
 #         "clean": [],  # Don't clean these files by default.
 #     }
 
-
-def task_summary_stats():
-    """ """
-    file_dep = ["./src/example_table.py"]
-    file_output = [
-        "example_table.tex",
-        "pandas_to_latex_simple_table1.tex",
-    ]
-    targets = [OUTPUT_DIR / file for file in file_output]
-
-    return {
-        "actions": [
-            "ipython ./src/example_table.py",
-            "ipython ./src/pandas_to_latex_demo.py",
-        ],
-        "targets": targets,
-        "file_dep": file_dep,
-        "clean": True,
-    }
-
-
-def task_example_plot():
-    """Example plots"""
-    file_dep = [Path("./src") / file for file in ["example_plot.py", "pull_fred.py"]]
-    file_output = ["example_plot.png"]
-    targets = [OUTPUT_DIR / file for file in file_output]
-
-    return {
-        "actions": [
-            # "date 1>&2",
-            # "time ipython ./src/example_plot.py",
-            "ipython ./src/example_plot.py",
-        ],
-        "targets": targets,
-        "file_dep": file_dep,
-        "clean": True,
-    }
-
 notebook_tasks = {
     "01_example_notebook_interactive.ipynb": {
         "file_dep": [],

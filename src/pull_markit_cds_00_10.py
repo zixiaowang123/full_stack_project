@@ -36,7 +36,7 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
     """
     db = wrds.Connection(wrds_username=wrds_username)
     cds_data = {}
-    for year in range(2000, 2010):  # Loop from 2001 to 2005
+    for year in range(2001, 2010):  # Loop from 2001 to 2005
         table_name = f"markit.CDS{year}"  # Generate table name dynamically
         query = f"""
         SELECT
