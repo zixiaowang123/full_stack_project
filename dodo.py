@@ -116,23 +116,34 @@ def task_config():
     }
 
 
-def task_pull_fred():
+#NEED TO ADJUST THIS TO PULL OUR PARQUETS EVENTUALLY
+def task_pull_data():
     """ """
     file_dep = [
         "./src/settings.py",
-        "./src/pull_fred.py",
-        "./src/pull_ofr_api_data.py",
+        "./src/pull_markit_mapping.py",
+        "./src/pull_wrds_bonds.py",
+        "./src/pull_mergent_bonds.py",
+        "./src/pull_treasury_rates.py",
+        "./src/pull_markit_cds.py",
     ]
     targets = [
-        DATA_DIR / "fred.parquet",
-        DATA_DIR / "ofr_public_repo_data.parquet",
+        DATA_DIR / "RED_and_ISIN_mapping.parquet",
+        DATA_DIR / "wrds_bond.parquet",
+        DATA_DIR / "mergent_bond.parquet",
+        DATA_DIR / "monthly_ts_data.parquet",
+        DATA_DIR / "issue_data.parquet.parquet",
+        DATA_DIR / "markit_cds.parquet",
     ]
 
     return {
         "actions": [
             "ipython ./src/settings.py",
-            "ipython ./src/pull_fred.py",
-            "ipython ./src/pull_ofr_api_data.py",
+            "ipython ./src/pull_markit_mapping.py",
+            "ipython ./src/pull_wrds_bonds.py",
+            "ipython ./src/pull_mergent_bonds.py",
+            "ipython ./src/pull_treasury_rates.py",
+            "ipython ./src/pull_markit_cds.py",
         ],
         "targets": targets,
         "file_dep": file_dep,
@@ -215,35 +226,6 @@ def task_example_plot():
         "file_dep": file_dep,
         "clean": True,
     }
-
-
-def task_chart_repo_rates():
-    """Example charts for Chart Book"""
-    file_dep = [
-        "./src/pull_fred.py",
-        "./src/chart_relative_repo_rates.py",
-    ]
-    targets = [
-        DATA_DIR / "repo_public.parquet",
-        DATA_DIR / "repo_public.xlsx",
-        DATA_DIR / "repo_public_relative_fed.parquet",
-        DATA_DIR / "repo_public_relative_fed.xlsx",
-        OUTPUT_DIR / "repo_rates.html",
-        OUTPUT_DIR / "repo_rates_normalized.html",
-        OUTPUT_DIR / "repo_rates_normalized_w_balance_sheet.html",
-    ]
-
-    return {
-        "actions": [
-            # "date 1>&2",
-            # "time ipython ./src/chart_relative_repo_rates.py",
-            "ipython ./src/chart_relative_repo_rates.py",
-        ],
-        "targets": targets,
-        "file_dep": file_dep,
-        "clean": True,
-    }
-
 
 notebook_tasks = {
     "01_example_notebook_interactive.ipynb": {
@@ -333,35 +315,40 @@ def task_run_notebooks():
 def task_compile_latex_docs():
     """Compile the LaTeX documents to PDFs"""
     file_dep = [
-        "./reports/report_example.tex",
-        "./reports/my_article_header.sty",
-        "./reports/slides_example.tex",
-        "./reports/my_beamer_header.sty",
-        "./reports/my_common_header.sty",
-        "./reports/report_simple_example.tex",
-        "./reports/slides_simple_example.tex",
-        "./src/example_plot.py",
-        "./src/example_table.py",
+        # "./reports/report_example.tex",
+        # "./reports/my_article_header.sty",
+        # "./reports/slides_example.tex",
+        # "./reports/my_beamer_header.sty",
+        # "./reports/my_common_header.sty",
+        # "./reports/report_simple_example.tex",
+        # "./reports/slides_simple_example.tex",
+        # "./src/example_plot.py",
+        # "./src/example_table.py",
+        "./reports/final_report.tex",
+
     ]
     targets = [
-        "./reports/report_example.pdf",
-        "./reports/slides_example.pdf",
-        "./reports/report_simple_example.pdf",
-        "./reports/slides_simple_example.pdf",
+        "./reports/final_report.pdf",
+        # "./reports/report_example.pdf",
+        # "./reports/slides_example.pdf",
+        # "./reports/report_simple_example.pdf",
+        # "./reports/slides_simple_example.pdf",
     ]
 
     return {
         "actions": [
             # My custom LaTeX templates
-            "latexmk -xelatex -halt-on-error -cd ./reports/report_example.tex",  # Compile
-            "latexmk -xelatex -halt-on-error -c -cd ./reports/report_example.tex",  # Clean
-            "latexmk -xelatex -halt-on-error -cd ./reports/slides_example.tex",  # Compile
-            "latexmk -xelatex -halt-on-error -c -cd ./reports/slides_example.tex",  # Clean
-            # Simple templates based on small adjustments to Overleaf templates
-            "latexmk -xelatex -halt-on-error -cd ./reports/report_simple_example.tex",  # Compile
-            "latexmk -xelatex -halt-on-error -c -cd ./reports/report_simple_example.tex",  # Clean
-            "latexmk -xelatex -halt-on-error -cd ./reports/slides_simple_example.tex",  # Compile
-            "latexmk -xelatex -halt-on-error -c -cd ./reports/slides_simple_example.tex",  # Clean
+            "latexmk -xelatex -halt-on-error -cd ./reports/final_report.tex",  # Compile
+            "latexmk -xelatex -halt-on-error -c -cd ./reports/final_report.tex",  # Clean
+            # "latexmk -xelatex -halt-on-error -cd ./reports/report_example.tex",  # Compile
+            # "latexmk -xelatex -halt-on-error -c -cd ./reports/report_example.tex",  # Clean
+            # "latexmk -xelatex -halt-on-error -cd ./reports/slides_example.tex",  # Compile
+            # "latexmk -xelatex -halt-on-error -c -cd ./reports/slides_example.tex",  # Clean
+            # # Simple templates based on small adjustments to Overleaf templates
+            # "latexmk -xelatex -halt-on-error -cd ./reports/report_simple_example.tex",  # Compile
+            # "latexmk -xelatex -halt-on-error -c -cd ./reports/report_simple_example.tex",  # Clean
+            # "latexmk -xelatex -halt-on-error -cd ./reports/slides_simple_example.tex",  # Compile
+            # "latexmk -xelatex -halt-on-error -c -cd ./reports/slides_simple_example.tex",  # Clean
             #
             # Example of compiling and cleaning in another directory. This often fails, so I don't use it
             # f"latexmk -xelatex -halt-on-error -cd -output-directory=../_output/ ./reports/report_example.tex",  # Compile
