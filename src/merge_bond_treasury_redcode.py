@@ -12,6 +12,7 @@ DATA_DIR = config("DATA_DIR")
 TREASURY_ISSUE_FILE_NAME = "issue_data.parquet"
 TREASURY_MONTHLY_FILE_NAME = "monthly_ts_data.parquet"
 CORPORATES_MONTHLY_FILE_NAME = "wrds_bond.parquet"
+RED_CODE_FILE_NAME = "RED_and_ISIN_mapping.parquet"
 
 def generate_treasury_data(issue_df, tm_df):
     '''
@@ -36,7 +37,10 @@ def generate_treasury_data(issue_df, tm_df):
         treas_yld: annualized discount rate
         tmatdt: maturity date
     '''
-    # merge in maturity
+    issue_df = issue_df.dropna(subset=['kycrspid', 'kytreasno'])
+    tm_df = tm_df.dropna(subset=['kycrspid', 'kytreasno'])
+    
+    # merge in maturity date
     t_df = tm_df.merge(issue_df, on=['kycrspid', 'kytreasno'], how='left')
 
     # dropna in necessary columns
@@ -184,6 +188,7 @@ def merge_treasuries_into_bonds(bond_df, treas_df, day_window=3):
     merge_df = merge_df[desired_cols]
 
     return merge_df
+    
 
 
 
@@ -235,6 +240,36 @@ def merge_red_code_into_bond_treas(bond_treas_df, red_c_df):
 
     return merged_df
 
+def main():
+    """
+    Main function to load data, process it, and merge Treasury data into Bonds.
+    """
+    print("Loading data...")
+
+    # Load DataFrames
+    issue_df = pd.read_parquet(f"{DATA_DIR}/{TREASURY_ISSUE_FILE_NAME}")
+    treas_monthly_df = pd.read_parquet(f"{DATA_DIR}/{TREASURY_MONTHLY_FILE_NAME}")
+    bond_df = pd.read_parquet(f"{DATA_DIR}/{CORPORATES_MONTHLY_FILE_NAME}")
+    red_df = pd.read_parquet(f"{DATA_DIR}/{RED_CODE_FILE_NAME}")
+
+    print("Generating Treasury data...")
+    treasury_data = generate_treasury_data(issue_df, treas_monthly_df)
+    
+    print("Merging Treasuries into Bonds...")
+    bond_treas_df = merge_treasuries_into_bonds(bond_df, treasury_data, day_window=3)
+
+    print("Merging Redcodes into file...")
+    bond_red_df = merge_red_code_into_bond_treas(bond_treas_df, red_df)
+
+    print("Saving processed data...")
+    bond_red_df.to_parquet(f"{DATA_DIR}/merged_bond_treasuries_redcode.parquet")
+
+    print("Processing complete. Data saved.")
+
+
+
+if __name__ == "__main__":
+    main()
 
 
 
