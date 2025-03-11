@@ -3,6 +3,9 @@ import numpy as np
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import ctypes
+
+from settings import config
 
 
 DATA_DIR = config("DATA_DIR")
@@ -26,6 +29,12 @@ def generate_treasury_data(issue_df, tm_df):
 
     output: merge dataframes to contain maturity date and then annualize daily yield
     drop NaNs for things that are necessary for analysis later
+        kycrspid: identification id
+        kytreasno: identification id
+        mcaldt: date of report
+        tmpubout: face value of public outstanding
+        treas_yld: annualized discount rate
+        tmatdt: maturity date
     '''
     # merge in maturity
     t_df = tm_df.merge(issue_df, on=['kycrspid', 'kytreasno'], how='left')
@@ -56,13 +65,13 @@ def merge_treasuries_into_bonds(bond_df, treas_df, day_window=3):
         amount_outstanding, -- The amount of the issue remaining outstanding.
         security_level, -- SEN is Senior Unsecured Debt i think
         date, -- Monthly Date
-        yield, -- Yield to maturity at the time of issuance.
+        yield, -- Yield to maturity at report date
         cusip,
         isin,
         rating, -- Combined Rating Class: 0.IG or 1.HY
         conv, -- Flag Convertible (1 or 0)
         offering_price, -- Offering Price
-        price_eom, -- Price-End of Month
+        price_eom, -- Price-End of Month (reported price)
         t_spread -- Avg Bid/Ask Spread
     
     treas_df: DF of treasuries with columns
@@ -75,15 +84,26 @@ def merge_treasuries_into_bonds(bond_df, treas_df, day_window=3):
     day_window: window to find successful matching for treasuries
 
     output: dataframe with treasury data merged into all valid ones for bond_df
+        company_symbol, -- Company Symbol (issuer stock ticker).
+        maturity, -- Date that the issue's principal is due for repayment.
+        amount_outstanding, -- The amount of the issue remaining outstanding.
+        date, -- Monthly Date (report date)
+        yield, -- ytm at report date
+        cusip,
+        rating, -- Combined Rating Class: 0.IG or 1.HY
+        price_eom, -- Price-End of Month (reported price)
+        t_spread, -- Avg Bid/Ask Spread
+        treas_yld, -- yield of similar treasury
     '''
 
     # assume all necessary filtering has been done on bond df
-    
+
     # pre work for datetime functionality and filtering
     treas_df = treas_df.reset_index()
     bond_df = bond_df.reset_index()
 
-    bond_df = bond_df[['cusip, company_symbol, date, maturity, amount_outstanding, yield, rating, price_eom, t_spread']]
+    bond_df = bond_df[['cusip', 'company_symbol', 'date', 'maturity', 
+                   'amount_outstanding', 'yield', 'rating', 'price_eom', 't_spread']]
 
     bond_df['date'] = pd.to_datetime(bond_df['date'])
     bond_df['maturity'] = pd.to_datetime(bond_df['maturity'])
@@ -101,9 +121,9 @@ def merge_treasuries_into_bonds(bond_df, treas_df, day_window=3):
     treas_df = treas_df[treas_df['year_m'].isin(ym_set)] # treasury pre filtering
 
     treas_mat_set = set(treas_df['tmatdt'])
-    maturity_dates = pd.Series(bond_df['maturities'].unique())
+    maturity_dates = pd.Series(bond_df['maturity'].unique())
     valid_mats = maturity_dates.apply(
-        lambda x: any(mat_date - timedelta(days=3) <= x <= mat_date + timedelta(days=3) for mat_date in treas_mat_set)
+        lambda x: any(mat_date - timedelta(days=day_window) <= x <= mat_date + timedelta(days=day_window) for mat_date in treas_mat_set)
     )
 
     v_mat_set = set(maturity_dates[valid_mats])
@@ -137,7 +157,7 @@ def merge_treasuries_into_bonds(bond_df, treas_df, day_window=3):
             return np.NaN
 
         t_df['day_diff'] = abs((t_df['tmatdt'] - maturity_date).dt.days)
-        t_df = t_df[t_df['day_diff'] <= 3]
+        t_df = t_df[t_df['day_diff'] <= day_window]
 
         if t_df.empty:
             lookup_cache[(year_m, maturity)] = np.NaN
@@ -156,10 +176,72 @@ def merge_treasuries_into_bonds(bond_df, treas_df, day_window=3):
 
     merge_df = bond_df.merge(treas_df, on='v_id', how='left')
 
+    # date, and maturity are definitely not missing, need all of the following values for categorization
+    # insurance drop NaN
+    merge_df = merge_df.dropna(subset=['cusip', 'v_id', 'yield', 'treas_yld', 'rating'])
+    desired_cols = ['cusip', 'company_symbol', 'date', 'maturity', 'amount_outstanding', 'yield', 'rating', 'price_eom', 't_spread', 'treas_yld']
+    
+    merge_df = merge_df[desired_cols]
+
     return merge_df
 
 
 
+def merge_red_code_into_bond_treas(bond_treas_df, red_c_df):
+    '''
+    bond_treas_df: dataframe containing the merged bond and treasury data
+        company_symbol, -- Company Symbol (issuer stock ticker).
+        maturity, -- Date that the issue's principal is due for repayment.
+        amount_outstanding, -- The amount of the issue remaining outstanding (sum of face values).
+        date, -- Monthly Date (report date)
+        yield, -- ytm at report date
+        cusip,
+        rating, -- Combined Rating Class: 0.IG or 1.HY
+        price_eom, -- Price-End of Month (reported price)
+        t_spread, -- Avg Bid/Ask Spread
+        treas_yld, -- yield of similar treasury
+    red_c_df: dataframe containing red code merging information
+        redcode, -- redcode of the issuer
+        ticker, -- ticker of the issuer
+        obl_cusip, -- cusip of an issue, the first 6 objects characters of the string should be the issuers tag 
+        isin, -- these are product specific
+        tier -- tier of product
+
+
+    output: dataframe with the issuer cusip and red_code now added
+        company_symbol, -- Company Symbol (issuer stock ticker).
+        maturity, -- Date that the issue's principal is due for repayment.
+        amount_outstanding, -- The amount of the issue remaining outstanding (sum of face values).
+        date, -- Monthly Date (report date)
+        yield, -- ytm at report date
+        issuer_cusip, -- 6 character issuer cusip
+        rating, -- Combined Rating Class: 0.IG or 1.HY
+        price_eom, -- Price-End of Month (reported price)
+        t_spread, -- Avg Bid/Ask Spread
+        treas_yld, -- yield of similar treasury
+        redcode -- redcode is issuer specific, used to merge CDS values later on
+    '''
+
+    bond_treas_df['issuer_cusip'] = bond_treas_df.apply(lambda row: row['cusip'][:6], axis=1)
+
+    red_c_df = red_c_df[['obl_cusip', 'redcode']].dropna()
+    red_c_df['issuer_cusip'] = red_c_df.apply(lambda row: row['obl_cusip'][:6], axis=1)
+    
+    # only need these 2 to merge
+    red_c_df = red_c_df[['issuer_cusip', 'redcode']].drop_duplicates().reset_index(drop=True)
+
+    # should drop all uneeded elements
+    merged_df = bond_treas_df.merge(red_c_df, on='issuer_cusip', how='inner')
+
+    return merged_df
+
+
+
+
+
+        
+
+    
 
 
 
