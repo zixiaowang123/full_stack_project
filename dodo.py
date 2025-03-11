@@ -416,9 +416,9 @@ def task_generate_redcode_dict():
 
 #DATA PULL TAKES FOREVER, UNCOMMENT IF NEEDED
 def task_data_pull_2():
-    """ """
+
     file_dep = [
-        "./_data/red_code_dict.json",
+        DATA_DIR / "red_code_dict.json",
         "./src/settings.py",
         "./src/pull_markit_cds_1.py",
         "./src/pull_markit_cds_2.py",
@@ -444,6 +444,21 @@ def task_data_pull_2():
         # But this one wont.
         # Use doit forget --all to redo all tasks. Use doit clean
         # to clean and forget the cheaper tasks.
+    }
+
+def task_merge_cds_and_bonds():
+    file_dep = [
+        DATA_DIR / "markit_cds_1.parquet",
+        DATA_DIR / "markit_cds_2.parquet",
+    ]
+
+    return {
+        "actions": [
+            "ipython ./src/settings.py",
+            "ipython ./src/merge_cds_bond.py"
+        ],
+        "file_dep": file_dep,
+        "clean": []
     }
 
 '''
