@@ -49,8 +49,8 @@ def get_cds_data_as_dict(wrds_username=WRDS_USERNAME):
         SELECT
             date, -- The date on which points on a curve were calculated
             ticker, -- The Markit ticker for the organization.
+            RedCode, -- The RED Code for identification of the entity. 
             parspread, -- The par spread associated to the contributed CDS curve.
-            avrating, -- Rating value according to rating agencies AAA etc.
             tenor,
             tier, -- SNRFOR is Senior Unsecured Debt 
             country
