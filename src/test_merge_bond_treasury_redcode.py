@@ -1,14 +1,15 @@
 import pandas as pd
+import numpy as np
 import pytest
 from settings import config
 from merge_bond_treasury_redcode import * 
 from datetime import date, datetime
 import datetime as datetime
 
-DATA_DIR = config("DATA_DIR")
 
 def test_generate_treasury_data():    
     issue_df = pd.DataFrame({
+        'kycrspid': [1, 2, 3, 4, 6, np.NaN],
         'kycrspid': [1, 2, 3, 4, 6, np.NaN],
         'kytreasno': [1, 2, 3, 4, 6, np.NaN],
         'tmatdt': [date(2020, 1, 1), date(2020, 1, 1), np.NaN, date(2020, 1, 1), date(2020, 1, 1), date(2020, 1, 1)]
