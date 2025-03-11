@@ -157,7 +157,7 @@ def main():
     fin_df = merge_cds_into_bonds(bond_red_df, cds_df)
 
     print("Saving processed data...")
-    fin_df.to_parquet(f"{DATA_DIR}/{FINAL_ANALYSIS_FILE_NAME}}")
+    fin_df.to_parquet(f"{DATA_DIR}/{FINAL_ANALYSIS_FILE_NAME}")
 
     print("Processing complete. Data saved.")
 
