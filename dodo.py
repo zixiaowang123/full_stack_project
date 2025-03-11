@@ -383,63 +383,47 @@ def task_data_pull_1():
         # But this one wont.
         # Use doit forget --all to redo all tasks. Use doit clean
         # to clean and forget the cheaper tasks.
-    } 
+    }
 
-TREASURY_ISSUE_FILE_NAME = "issue_data.parquet"
-TREASURY_MONTHLY_FILE_NAME = "monthly_ts_data.parquet"
-CORPORATES_MONTHLY_FILE_NAME = "wrds_bond.parquet"
-RED_CODE_FILE_NAME = "RED_and_ISIN_mapping.parquet"
+
 
 def task_create_bond_treas_redcode_file():
     """
     Main function to load data, process it, and merge Treasury data into Bonds.
     """
-    print("Loading data...")
+    file_dep = [
+        DATA_DIR / "RED_and_ISIN_mapping.parquet",
+        DATA_DIR / "wrds_bond.parquet",
+        DATA_DIR / "monthly_ts_data.parquet",
+        DATA_DIR / "issue_data.parquet.parquet",
+    ]
+    return {
+        "actions": [
+            "ipython ./src/merge_bond_treasury_redcode.py"
+        ]
+    }
 
-    # Load DataFrames
-    issue_df = pd.read_parquet(f"{DATA_DIR}/{TREASURY_ISSUE_FILE_NAME}")
-    treas_monthly_df = pd.read_parquet(f"{DATA_DIR}/{TREASURY_MONTHLY_FILE_NAME}")
-    bond_df = pd.read_parquet(f"{DATA_DIR}/{CORPORATES_MONTHLY_FILE_NAME}")
-    red_df = pd.read_parquet(f"{DATA_DIR}/{RED_CODE_FILE_NAME}")
-
-    print("Generating Treasury data...")
-    treasury_data = generate_treasury_data(issue_df, treas_monthly_df)
-    
-    print("Merging Treasuries into Bonds...")
-    bond_treas_df = merge_treasuries_into_bonds(bond_df, treasury_data, day_window=3)
-
-    print("Merging Redcodes into file...")
-    bond_red_df = merge_red_code_into_bond_treas(bond_treas_df, red_df)
-
-    print("Saving processed data...")
-    bond_red_df.to_parquet(f"{DATA_DIR}/merged_bond_treasuries_redcode.parquet")
-
-    print("Processing complete. Data saved.")
 
 def task_generate_redcode_dict():
-    data = pd.read_parquet(f"{DATA_DIR}/merged_bond_treasuries_redcode.parquet")
-    data['year'] = data["date"].dt.year
-
-    red_code_dict = {}
-    for y in list(data['year'].unique()):
-        y_df = data[data['year'] == y]
-        red_code_dict[y] = list(y_df['redcode'].unique())
-    d = {int(key): value for key, value in red_code_dict.items()}
-    with open(f"{DATA_DIR}/red_code_dict.json", 'w') as file:
-        json.dump(d, file)
+    file_dep = [
+        DATA_DIR / "merged_bond_treasuries_redcode.parquet"
+    ]
+    return {
+        "actions": [
+            "ipython ./src/generate_redcode_dict.py"
+        ]
+    }
 
 #DATA PULL TAKES FOREVER, UNCOMMENT IF NEEDED
-'''def task_data_pull_2():
+def task_data_pull_2():
     """ """
     file_dep = [
-        "./_data/red_code_dict.json"
+        "./_data/red_code_dict.json",
         "./src/settings.py",
-        "./src/pull_mergent_bonds.py",
         "./src/pull_markit_cds_1.py",
         "./src/pull_markit_cds_2.py",
     ]
     targets = [
-        DATA_DIR / "mergent_bond.parquet",
         DATA_DIR / "markit_cds_1.parquet",
         DATA_DIR / "markit_cds_2.parquet",
     ]
@@ -447,7 +431,6 @@ def task_generate_redcode_dict():
     return {
         "actions": [
             "ipython ./src/settings.py",
-            "ipython ./src/pull_treasury_rates.py",
             "ipython ./src/pull_markit_cds_1.py",
             "ipython ./src/pull_markit_cds_2.py",
         ],
@@ -461,7 +444,7 @@ def task_generate_redcode_dict():
         # But this one wont.
         # Use doit forget --all to redo all tasks. Use doit clean
         # to clean and forget the cheaper tasks.
-    }'''
+    }
 
 '''
 notebook_tasks = {
