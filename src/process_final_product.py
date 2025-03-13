@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.interpolate import CubicSpline
+import os
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -49,7 +50,8 @@ def calc_cb_spread(df):
     return df
 
 
-def generate_graph(df, col='rfr', col2=None, two=False):
+
+def generate_graph(df, col='rfr', col2=None, two=False, save=True, filename=None):
     '''
     Generates a time series plot for given columns based on bond ratings.
     
@@ -58,6 +60,8 @@ def generate_graph(df, col='rfr', col2=None, two=False):
     - col: Primary column to graph (default is 'rfr').
     - col2: Secondary column to graph if two=True.
     - two: Boolean flag indicating whether to plot a second column with a secondary axis.
+    - save: Boolean flag indicating whether to save the plot as a PNG file.
+    - filename: Name of the output file. If None, the name is auto-generated.
     '''
     df['date'] = pd.to_datetime(df['date'])
 
@@ -103,14 +107,17 @@ def generate_graph(df, col='rfr', col2=None, two=False):
     # Set title
     plt.title(f"Time Series Plot of {col}" + (f" and {col2}" if two and col2 is not None else ""))
     
+    # Auto-generate filename if not provided
+    if filename is None:
+        filename = f"{col}_plot.png" if not two else f"{col}_{col2}_plot.png"
+
+    # Save the plot if required
+    if save:
+        output_dir = "../_output"
+        os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
+        filepath = os.path.join(output_dir, filename)
+        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to {filepath}")
+
     # Show the plot
     plt.show()
-
-    
-
-
-
-
-                
-
-
