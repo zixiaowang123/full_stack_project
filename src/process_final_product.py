@@ -44,6 +44,8 @@ def calc_cb_spread(df):
     df['CB'] = df['par_spread'] - df['FR']
     df['rfr'] = df['treas_yld'] - df['CB']
 
+    df = df[df['rfr'] < 1] # remove unreasonable data, rfr is in absolute space
+
     return df
 
 def generate_graph(df, col='rfr'):
@@ -57,9 +59,6 @@ def generate_graph(df, col='rfr'):
 
     # Compute the mean of the specified column per (date, rating) pair
     df_grouped = df.groupby(['date', 'rating'])[col].mean().reset_index()
-
-    if col == 'rfr':
-        df_grouped = df_grouped[df_grouped[col] < 1]
 
     # Create the plot
     plt.figure(figsize=(12, 6))

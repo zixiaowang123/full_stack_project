@@ -10,7 +10,7 @@ from settings import config
 
 
 DATA_DIR = config("DATA_DIR")
-BOND_RED_CODE_FILE_NAME = "merged_bond_treasuries_redcode.parquet"
+BOND_RED_CODE_FILE_NAME = "merged_bond_treas_red.parquet"
 CDS_FILE_NAME = "cds_final.parquet"
 FINAL_ANALYSIS_FILE_NAME = "final_data.parquet"
 

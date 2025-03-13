@@ -262,7 +262,7 @@ def main():
     bond_red_df = merge_red_code_into_bond_treas(bond_treas_df, red_df)
 
     print("Saving processed data...")
-    bond_red_df.to_parquet(f"{DATA_DIR}/merged_bond_treasuries_redcode.parquet")
+    bond_red_df.to_parquet(f"{DATA_DIR}/merged_bond_treas_red.parquet")
 
     print("Processing complete. Data saved.")
 
