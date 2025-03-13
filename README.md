@@ -110,13 +110,17 @@ loading by importing `config`.
 
 ### Naming Conventions
 
-ALEX EDIT THIS
-
  - **`pull_` vs `load_`**: Files or functions that pull data from an external
  data source are prepended with "pull_", as in "pull_fred.py". Functions that
  load data that has been cached in the "_data" folder are prepended with "load_".
  For example, inside of the `pull_wrds_bonds.py` file there is both a
  `pull_compustat` function and a `load_compustat` function.
+
+  - **`generate_`**: functions that create an intermediary product for the purpose of
+  setting up a subsequent process. In `generate_redcode_dict.py`, we generate a
+  dictionary that maps dates to specific Redcodes we want to pull from the
+  Markit CDS table. This process allowed for more efficient SQL pulling which saves
+  considerable time in the data pulling process.
 
  - **`merge_`**: functions that bring dataframes of different types of data together. 
  For example, in `merge_cds_bonds`, the `merge_cds_into_bonds` function will 
@@ -125,6 +129,8 @@ ALEX EDIT THIS
  - **`process_`**: functions that process a final product. The only example of this is in 
  `process_final_product.py`. The `process_cb_spread` function is used to process the final steps
  of calculating the CDS spreads specified in the paper.
+
+
 
 
 ### Dependencies and Virtual Environments
