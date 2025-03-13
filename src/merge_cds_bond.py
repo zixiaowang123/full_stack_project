@@ -151,6 +151,7 @@ def main():
     CDS1 = pd.read_parquet(f"{DATA_DIR}/markit_cds_1.parquet")
     CDS2 = pd.read_parquet(f"{DATA_DIR}/markit_cds_2.parquet")
     CDSs = pd.concat([CDS1, CDS2], ignore_index=True)
+    CDSs.to_parquet(f"{DATA_DIR}/{CDS_FILE_NAME}")
 
     # Load DataFrames
     bond_red_df = pd.read_parquet(f"{DATA_DIR}/{BOND_RED_CODE_FILE_NAME}")
