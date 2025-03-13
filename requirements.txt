@@ -55,6 +55,7 @@ sphinxcontrib-applehelp==2.0.0
 sphinxcontrib-htmlhelp==2.1.0
 sphinxext-rediraffe
 statsmodels==0.14.4
+tqdm
 wrds==3.2.0
 xbbg==0.7.7
 xlrd==2.0.1
