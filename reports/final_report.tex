@@ -21,7 +21,7 @@ Corporate CDS-Bond Spread
 % }
 
 \author{
-Alex Wang and Vincent Xu
+Alex Wang \& Vincent Xu
   % \newline 
   % \hspace{3pt} \indent \hspace{3pt}
   % % I am immensely grateful to...
@@ -37,8 +37,11 @@ Alex Wang and Vincent Xu
 
 \doublespacing
 \begin{abstract}
-We replicate the Corporate Bond - Credit Default Swap arbitrage findings from 
-Siriwardane, Sunderam, and Wallen 2023
+We attempt to replicate the Corporate Bond - Credit Default Swap arbitrage findings from 
+Siriwardane, Sunderam, and Wallen 2023. While the exact results do not match up,
+the process of pulling and analyzing the data was constructive and informative
+regarding using data from the Wharton Research Data Services (WRDS) platform.
+
 \end{abstract}
 
 
@@ -47,30 +50,33 @@ Siriwardane, Sunderam, and Wallen 2023
 \doublespacing
 \section{Introduction}
 
-INSERT INTRODUCTION FOR SECTION 1
+We attempt to replicate the findings of Siriwardane, Sunderam, and Wallen from 2023
+on the CDS-Corporate Bond spread. We encountered numerous roadblocks during the
+data pulling process due to insufficient description of methodology from the
+original authors. Nevertheless, we followed their steps as best as we could, and
+ultimately constructed a graph of the spread according to data pulled and analyzed
+using our own methodology. We successfully identified a reasonable arbitrage
+opportunity as seen in the figure below. We do not, however, comment on the exact 
+feasibility of the trade strategy as our analysis did not incorporate transaction
+costs and required a degree of creative freedom in the process.
 
+\begin{figure}
+    \centering
+    \caption{Plot of CDS-Corporate Bond Spread}
+      \centering
+      \includegraphics[width=0.75\linewidth]{\PathToOutput/Final Graph.png}
+    
+    \caption*{
+      Implied arbitrage opportunity (measured in basis points) between a given 
+      corporate bond and its corresponding CDS' par-rate, after accounting for the 
+      contemporary treasury yield
+      }
+    \label{fig:div-futures-habits-comparison}
+    \end{figure}
 
-\begin{textbox}{green}{Comments}
-Here is a textbox...
-\end{textbox}
+\section{Data pull and analysis methodology}
 
-I give an example of a simple table in Table \ref{table:pandas_to_latex_simple_table1.tex}.
-
-
-\begin{table}
-\caption{A Simple Table From Pandas, No. 1}
-\centering
-\input{\PathToOutput/pandas_to_latex_simple_table1.tex}
-\caption*{
-  Here I show some data...
-}
-\label{table:pandas_to_latex_simple_table1.tex}
-\end{table}
-
-
-\section{Data pull methodology}
-
-We used data obtained from various tables on Wharton Research Data Services (WRDS).
+We used data obtained from various tables on WRDS.
 For Bonds, we used the Mergent fixed income\footnote{fisd\_fisd.fisd\_mergedissue} and 
 WRDS bond return\footnote{wrdsapps\_bondret.bondret} tables.
 For Credit Default Swaps we used the Markit CDS\footnote{markit.CDS}
@@ -78,142 +84,54 @@ tables across the years of 2002-2024. To match the data between CDSs and Bonds, 
 used the Markit RedCode CUSIP table\footnote{markit\_red.redobllookup} to match 
 CDS RedCodes to Bond CUSIPs.
 
+First we pull corporate bond time series data, treasury time series data, 
+and some mapping features. The corporate bond time series data was used to 
+generate the FR value (calculated as the Z-spread of the corporate bonds). 
+Treasury time series data was also used for this purpose as we generated treasury yields.
 
-Vitae congue mauris rhoncus aenean. Turpis egestas pretium aenean pharetra.
-Non pulvinar neque laoreet suspendisse interdum consectetur libero id
-faucibus. Id porta nibh venenatis cras sed. Viverra tellus in hac habitasse
-platea. Sit amet facilisis magna etiam tempor orci eu lobortis elementum.
-Porttitor leo a diam sollicitudin. Imperdiet proin fermentum leo vel orci
-porta non. Maecenas pharetra convallis posuere morbi. Vel risus commodo
-viverra maecenas accumsan lacus vel facilisis volutpat. Faucibus vitae
-aliquet nec ullamcorper sit amet risus nullam. Sit amet venenatis urna cursus
-eget nunc scelerisque viverra mauris. A arcu cursus vitae congue. Ullamcorper
-morbi tincidunt ornare massa eget.
+The Z-Spread of a Corporate Bond is the constant spread that must be added to 
+the zero-coupon Treasury yield curve to make the present value of the bond's 
+cash flows equal to its market price. 
 
-\begin{figure}
-\centering
-\captionsetup{width=0.8\textwidth}
-\caption{Network}
-  \centering
-  \includegraphics[width=0.6\linewidth]{\PathToAssets/star_network_n_nodes.eps}
-\caption*{
-  Star network
-  }
-\label{fig:star_network_n_nodes.eps}
-\end{figure}
+The Z-spread is found by solving the equation:
+\begin{equation}
+    P = \sum_{t=1}^{N} \frac{C_t}{(1 + y_m + z)^t}
+\end{equation}
 
 
-Eget duis at tellus at. Turpis egestas integer eget aliquet nibh praesent
-tristique magna. Egestas diam in arcu cursus euismod quis viverra nibh cras.
-Velit laoreet id donec ultrices tincidunt arcu non sodales. Urna duis
-convallis convallis tellus id. Ut pharetra sit amet aliquam. Adipiscing
-commodo elit at imperdiet dui accumsan sit. Arcu cursus euismod quis viverra
-nibh. Dictum at tempor commodo ullamcorper a. Nunc eget lorem dolor sed
-viverra. Pellentesque pulvinar pellentesque habitant morbi tristique senectus
-et netus et. Feugiat pretium nibh ipsum consequat nisl vel. Magna fermentum
-iaculis eu non diam phasellus vestibulum. Et netus et malesuada fames ac
-turpis. Purus ut faucibus pulvinar elementum integer enim neque. Sem
-fringilla ut morbi tincidunt augue. Facilisi cras fermentum odio eu feugiat
-pretium nibh. Pellentesque nec nam aliquam sem et. Mi bibendum neque egestas
-congue quisque egestas diam. For example, see \citet{fama1992cross}. Also, here's another
-way to cite \citep{sharpe1964capital}.
+Where: \\
+- $P$ = Market price of the bond \\
+- $C_t$ = Cash flow (coupon or principal) at time $t$ \\
+- $r_t$ = Discount rate of the zero-coupon Treasury bond at time $t$ \\
+- $Z$ = Z-spread \\
+- $N$ = Number of periods \\
 
-\begin{figure}
-\centering
-\caption{Example plot}
-  \centering
-  \includegraphics[width=0.75\linewidth]{\PathToOutput/example_plot.png}
-  % \caption{Average returns}
-\caption*{
-  Inflation and Real GDP...
-  }
-\label{fig:div-futures-habits-comparison}
-\end{figure}
+The Z-spread accounts for different discount rates of a treasury. 
+Our surrogate Z-spread (since a Z-spread was not provided in the WRDS database)
+and in turn what we used to calculate FR, is as follows:
 
-Enim sit amet venenatis urna cursus eget. Dictumst quisque sagittis purus sit
-amet volutpat consequat mauris. Accumsan sit amet nulla facilisi morbi tempus
-iaculis urna id. Vel turpis nunc eget lorem dolor. Rutrum quisque non tellus
-orci ac auctor augue mauris. Vestibulum mattis ullamcorper velit sed
-ullamcorper morbi. In fermentum posuere urna nec tincidunt. Mollis nunc sed
-id semper risus in hendrerit gravida rutrum. Ante in nibh mauris cursus
-mattis molestie a iaculis at. Consectetur a erat nam at. Ac turpis egestas
-integer eget aliquet nibh praesent tristique. Et netus et malesuada fames ac.
-Mollis nunc sed id semper risus in hendrerit gravida. Platea dictumst quisque
-sagittis purus.
+\begin{equation}
+P = \sum_{t=1}^{N} \frac{C_t}{(1 + y_m + z)^t}
+\end{equation}
 
-\begin{mydefinition}[Fibration]
-  A fibration is a mapping between two topological spaces that has the homotopy lifting property for every space \(X\).
-\end{mydefinition}
+Where: \\
+- $P$ = Market price of the bond \\
+- $C_t$ = Cash flow (coupon or principal) at time \( t \)  \\
+- $y_m$ = Yield of the zero-coupon Treasury bond at time $t_m$ \\
+\indent - This is different because the yield is calculated at the time the 
+market price is set, which is a fixed rate substitute for a varying discount rate
+- $z$ = Z-spread surrogate \\
+- $N$ = Number of periods \\
 
-\begin{proposition}
-  Let \(f\) be a function whose derivative exists in every point, then \(f\) is 
-  a continuous function.
-\end{proposition}
-\begin{proof}
-  We have that \(f\) is a differentiable function and so it must be continuous.
-\end{proof}
-
-\begin{mylemma}
-  Given two line segments whose lengths are \(a\) and \(b\) respectively there is a 
-  real number \(r\) such that \(b=ra\).
-\end{mylemma}
-
-\begin{proof}
-  To prove it by contradiction try and assume that the statement is false,
-  proceed from there and at some point you will arrive to a contradiction.
-\end{proof}
-
-Ac turpis egestas maecenas pharetra convallis posuere. Vitae aliquet nec
-ullamcorper sit amet risus nullam. Feugiat nisl pretium fusce id velit ut
-tortor pretium. Nec ullamcorper sit amet risus nullam eget felis eget nunc.
-Luctus accumsan tortor posuere ac ut consequat semper viverra nam. Egestas
-pretium aenean pharetra magna. Pharetra massa massa ultricies mi quis
-hendrerit dolor. Est ullamcorper eget nulla facilisi etiam dignissim diam.
-Sagittis vitae et leo duis ut diam quam. Magna ac placerat vestibulum lectus
-mauris ultrices eros in cursus. Adipiscing diam donec adipiscing tristique
-risus nec feugiat in. Sed pulvinar proin gravida hendrerit.
-
-Magna eget est lorem ipsum dolor. Id ornare arcu odio ut sem nulla pharetra.
-Imperdiet massa tincidunt nunc pulvinar sapien et ligula. Vulputate odio ut
-enim blandit volutpat maecenas volutpat blandit aliquam. Turpis egestas
-integer eget aliquet nibh praesent tristique magna. Diam phasellus vestibulum
-lorem sed risus ultricies tristique nulla. Augue lacus viverra vitae congue
-eu. Lacus laoreet non curabitur gravida. Iaculis urna id volutpat lacus
-laoreet. Mi in nulla posuere sollicitudin aliquam ultrices sagittis. Enim
-nunc faucibus a pellentesque sit amet porttitor eget. Aliquam sem fringilla
-ut morbi tincidunt augue interdum velit euismod. Pellentesque massa placerat
-duis ultricies lacus sed.
-
-Et tortor consequat id porta. Nam libero justo laoreet sit amet cursus sit. A
-iaculis at erat pellentesque adipiscing commodo elit. Pharetra vel turpis
-nunc eget. Turpis nunc eget lorem dolor sed viverra ipsum nunc aliquet. Quam
-adipiscing vitae proin sagittis. Vitae suscipit tellus mauris a diam maecenas
-sed enim ut. Rutrum tellus pellentesque eu tincidunt. Pellentesque diam
-volutpat commodo sed. Erat velit scelerisque in dictum non. Consectetur lorem
-donec massa sapien faucibus et molestie. Suspendisse potenti nullam ac
-tortor. Amet massa vitae tortor condimentum lacinia quis. Et malesuada fames
-ac turpis egestas maecenas pharetra. Augue eget arcu dictum varius duis at
-consectetur lorem.
+We continue a more in depth discussion regarding our data processing methodology
+in the available Jupyter notebook.
 
 \newpage
 \bibliographystyle{jpe}
 \bibliography{bibliography.bib}  % list here all the bibliographies that you need. 
-% \bibliography{\PathToBibFile}
-% \printbibliography
-
-\newpage
-\begin{appendices}
-\section{Proofs}
-
-TODO
+Siriwardane, Emil and Sunderam, Aditya and Wallen, Jonathan, Segmented Arbitrage 
+(November 2023). Available at SSRN: https://ssrn.com/abstract=3960980 or 
+http://dx.doi.org/10.2139/ssrn.3960980
 
 
-
-\section{Recycle Bin}
-{\textbf{(Short-term parking spot for material that may be re-used or deleted at a later time)}}
-
-
-TODO
-
-\end{appendices}
 \end{document}
