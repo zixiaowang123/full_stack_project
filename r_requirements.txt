@@ -71,6 +71,7 @@ tidymodels
 tidyquant
 tidyverse
 truncreg
+tqdm
 tseries
 urca
 vars
