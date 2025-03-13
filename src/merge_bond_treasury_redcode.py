@@ -253,7 +253,7 @@ def main():
     red_df = pd.read_parquet(f"{DATA_DIR}/{RED_CODE_FILE_NAME}")
 
     print("Generating Treasury data...")
-    treasury_data = generate_treasury_data(issue_df, treas_monthly_df)
+    treasury_data = merge_treasury_data(issue_df, treas_monthly_df)
     
     print("Merging Treasuries into Bonds...")
     bond_treas_df = merge_treasuries_into_bonds(bond_df, treasury_data, day_window=3)
