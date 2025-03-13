@@ -14,7 +14,7 @@ TREASURY_MONTHLY_FILE_NAME = "monthly_ts_data.parquet"
 CORPORATES_MONTHLY_FILE_NAME = "wrds_bond.parquet"
 RED_CODE_FILE_NAME = "RED_and_ISIN_mapping.parquet"
 
-def generate_treasury_data(issue_df, tm_df):
+def merge_treasury_data(issue_df, tm_df):
     '''
     issue_df: Dataframe containing treasury bond and issue data
         kycrspid: identification id

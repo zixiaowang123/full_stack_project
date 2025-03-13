@@ -8,7 +8,7 @@ import numpy as np
 from process_final_product import *
 import os
 
-def test_calc_cb_spread():
+def test_process_cb_spread():
     """
     Unit test for calc_cb_spread() function.
     This test ensures that:
@@ -32,7 +32,7 @@ def test_calc_cb_spread():
     })
 
     # Apply the function
-    result_df = calc_cb_spread(test_df)
+    result_df = process_cb_spread(test_df)
 
     # Expected calculations
     expected_FR = test_df['yield'] - test_df['treas_yld']
