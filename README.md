@@ -1,11 +1,11 @@
-Example Project Using the ChartBook Template
+Constructing CDS spread returns from Segmented Arbitrage
 =============================================
 
 ## About this project
 
 This project is part of the Winter 2025 Full Stack Quantitative Finance course taught by Professor Jeremy Bejarano.
 
-We are replicating the implied arbitrage spread from CDS and corporate bonds of high yield and investment grade.
+We are replicating the implied CDS arbitrage spread specified by Siriwardane, Sunderam, and Wallen in their paper [Segmented Arbitrage](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3960980). The actual details of the construction are in the [Appendix](https://static1.squarespace.com/static/5e29e11bb83a3f5d75beb17d/t/654d74d916f20316049a0889/1699575002123/Appendix.pdf).
 
 
 ## Quick Start
@@ -31,33 +31,16 @@ Finally, you can then run
 ```
 doit
 ```
-And that's it!
-
-If you would also like to run the R code included in this project, you can either install
-R and the required packages manually, or you can use the included `environment.yml` file.
-To do this, run
-```
-mamba env create -f environment.yml
-```
-I'm using `mamba` here because `conda` is too slow. Activate the environment. 
-Then, make sure to uncomment
-out the RMarkdown task from the `dodo.py` file. Then,
-run `doit` as before.
+And that's it! The doit run should take around 20-30 minutes due to the complications of SQL pulls and merge functions. When you are done with the doit files. Please run the **01-cds_arb_analysis.ipynb** for more information on the construction process and saving summary graphs.
 
 ### Other commands
 
 #### Unit Tests and Doc Tests
 
-You can run the unit test, including doctests, with the following command:
+Once running the doit and the notebook, you can run the unit test, including doctests, with the following command:
 ```
 pytest --doctest-modules
 ```
-You can build the documentation with:
-```
-rm ./src/.pytest_cache/README.md 
-jupyter-book build -W ./
-```
-Use `del` instead of rm on Windows
 
 #### Setting Environment Variables
 
@@ -80,7 +63,7 @@ set_env.bat
    pictures that were not generated from code. These things cannot be easily
    recreated if they are deleted.
 
- - The `_output` folder, on the other hand, contains dataframes and figures that are
+ - The `_output` folder, on the other hand, contains figures that are
    generated from code. The entire folder should be able to be deleted, because
    the code can be run again, which would again generate all of the contents.
 
@@ -127,12 +110,21 @@ loading by importing `config`.
 
 ### Naming Conventions
 
+ALEX EDIT THIS
+
  - **`pull_` vs `load_`**: Files or functions that pull data from an external
  data source are prepended with "pull_", as in "pull_fred.py". Functions that
  load data that has been cached in the "_data" folder are prepended with "load_".
- For example, inside of the `pull_CRSP_Compustat.py` file there is both a
- `pull_compustat` function and a `load_compustat` function. The first pulls from
- the web, whereas the other loads cached data from the "_data" directory.
+ For example, inside of the `pull_wrds_bonds.py` file there is both a
+ `pull_compustat` function and a `load_compustat` function.
+
+ - **`merge_`**: functions that bring dataframes of different types of data together. 
+ For example, in `merge_cds_bonds`, the `merge_cds_into_bonds` function will 
+ merge the CDS dataframe into a bond dataframe generated previously.
+
+ - **`process_`**: functions that process a final product. The only example of this is in 
+ `process_final_product.py`. The `process_cb_spread` function is used to process the final steps
+ of calculating the CDS spreads specified in the paper.
 
 
 ### Dependencies and Virtual Environments

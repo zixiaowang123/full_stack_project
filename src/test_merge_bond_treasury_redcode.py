@@ -7,7 +7,7 @@ from datetime import date, datetime
 import datetime as datetime
 
 
-def test_generate_treasury_data():    
+def test_merge_treasury_data():    
     issue_df = pd.DataFrame({
         'kycrspid': [1, 2, 3, 4, 6, np.NaN],
         'kycrspid': [1, 2, 3, 4, 6, np.NaN],
@@ -23,7 +23,7 @@ def test_generate_treasury_data():
         'tmyld': [0.0005, np.NaN, 0.0005, 0.0005, 0.0005, 0.0005]
     })
 
-    res_df = generate_treasury_data(issue_df, treas_df)
+    res_df = merge_treasury_data(issue_df, treas_df)
 
     assert isinstance(res_df, pd.DataFrame)
     assert not res_df.empty, "res_df is empty, expected at least one row"

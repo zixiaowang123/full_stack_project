@@ -17,7 +17,7 @@ DATA_DIR = config("DATA_DIR")
 FINAL_ANALYSIS_FILE_NAME = "final_data.parquet"
 
 
-def calc_cb_spread(df):
+def process_cb_spread(df):
     '''
     INPUT WAS PREVIOUS FINAL PRODUCT
     df: dataframe with par spread values merged into all values where there was a possible cubic spline
