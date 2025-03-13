@@ -1,0 +1,136 @@
+% !TeX root = report_example.tex
+\newcommand*{\PathToAssets}{../assets}%
+\newcommand*{\PathToOutput}{../_output}%
+% \newcommand*{\PathToBibFile}{bibliography.bib}%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This file is compiled with XeLaTex.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[12pt]{article}
+%\documentclass[reqno]{amsart}
+%\documentclass[titlepage]{amsart}
+\usepackage{my_article_header}
+\usepackage{my_common_header}
+
+\begin{document}
+\title{
+Corporate CDS-Bond Spread
+}
+% {\color{blue} \large Preliminary. Do not distribute.}
+% }
+
+\author{
+Alex Wang \& Vincent Xu
+  % \newline 
+  % \hspace{3pt} \indent \hspace{3pt}
+  % % I am immensely grateful to...
+}
+% \maketitle
+\begin{titlepage}
+% \input{cover_letter.tex}
+\maketitle
+%http://tex.stackexchange.com/questions/141446/problem-of-duplicate-identifier-when-using-bibentry-and-hyperref
+% \nobibliography*
+
+% Abstract should have fewer than 150 words
+
+\doublespacing
+\begin{abstract}
+We attempt to replicate the Corporate Bond - Credit Default Swap arbitrage findings from 
+Siriwardane, Sunderam, and Wallen 2023. While the exact results do not match up,
+the process of pulling and analyzing the data was constructive and informative
+regarding using data from the Wharton Research Data Services (WRDS) platform.
+
+\end{abstract}
+
+
+\end{titlepage}
+
+\doublespacing
+\section{Introduction}
+
+We attempt to replicate the findings of Siriwardane, Sunderam, and Wallen from 2023
+on the CDS-Corporate Bond spread. We encountered numerous roadblocks during the
+data pulling process due to insufficient description of methodology from the
+original authors. Nevertheless, we followed their steps as best as we could, and
+ultimately constructed a graph of the spread according to data pulled and analyzed
+using our own methodology. We successfully identified a reasonable arbitrage
+opportunity as seen in the figure below. We do not, however, comment on the exact 
+feasibility of the trade strategy as our analysis did not incorporate transaction
+costs and required a degree of creative freedom in the process.
+
+\begin{figure}
+    \centering
+    \caption{Plot of CDS-Corporate Bond Spread}
+      \centering
+      \includegraphics[width=0.75\linewidth]{\PathToOutput/Time Series Plot of rfr.png}
+    
+    \caption*{
+      Implied arbitrage opportunity (measured in basis points) between a given 
+      corporate bond and its corresponding CDS' par-rate, after accounting for the 
+      contemporary treasury yield
+      }
+    \end{figure}
+
+\section{Data pull and analysis methodology}
+
+We used data obtained from various tables on WRDS.
+For Bonds, we used the Mergent fixed income\footnote{fisd\_fisd.fisd\_mergedissue} and 
+WRDS bond return\footnote{wrdsapps\_bondret.bondret} tables.
+For Credit Default Swaps we used the Markit CDS\footnote{markit.CDS}
+tables across the years of 2002-2024. To match the data between CDSs and Bonds, we
+used the Markit RedCode CUSIP table\footnote{markit\_red.redobllookup} to match 
+CDS RedCodes to Bond CUSIPs.
+
+First we pull corporate bond time series data, treasury time series data, 
+and some mapping features. The corporate bond time series data was used to 
+generate the FR value (calculated as the Z-spread of the corporate bonds). 
+Treasury time series data was also used for this purpose as we generated treasury yields.
+
+The Z-Spread of a Corporate Bond is the constant spread that must be added to 
+the zero-coupon Treasury yield curve to make the present value of the bond's 
+cash flows equal to its market price. 
+
+The Z-spread is found by solving the equation:
+\begin{equation}
+    P = \sum_{t=1}^{N} \frac{C_t}{(1 + y_m + z)^t}
+\end{equation}
+
+
+Where: \\
+- $P$ = Market price of the bond \\
+- $C_t$ = Cash flow (coupon or principal) at time $t$ \\
+- $r_t$ = Discount rate of the zero-coupon Treasury bond at time $t$ \\
+- $Z$ = Z-spread \\
+- $N$ = Number of periods \\
+
+The Z-spread accounts for different discount rates of a treasury. 
+Our surrogate Z-spread (since a Z-spread was not provided in the WRDS database)
+and in turn what we used to calculate FR, is as follows:
+
+\begin{equation}
+P = \sum_{t=1}^{N} \frac{C_t}{(1 + y_m + z)^t}
+\end{equation}
+
+Where: \\
+- $P$ = Market price of the bond \\
+- $C_t$ = Cash flow (coupon or principal) at time \( t \)  \\
+- $y_m$ = Yield of the zero-coupon Treasury bond at time $t_m$ \\
+\indent - This is different because the yield is calculated at the time the 
+market price is set, which is a fixed rate substitute for a varying discount rate
+- $z$ = Z-spread surrogate \\
+- $N$ = Number of periods \\
+
+We continue a more in depth discussion regarding our data processing methodology
+in the available Jupyter notebook.
+
+\newpage
+\bibliographystyle{jpe}
+\bibliography{bibliography.bib}  % list here all the bibliographies that you need. 
+Siriwardane, Emil and Sunderam, Aditya and Wallen, Jonathan, Segmented Arbitrage 
+(November 2023). Available at SSRN: https://ssrn.com/abstract=3960980 or 
+http://dx.doi.org/10.2139/ssrn.3960980
+
+
+\end{document}

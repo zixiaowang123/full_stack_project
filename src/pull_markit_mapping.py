@@ -26,10 +26,9 @@ END_DATE = pd.Timestamp("2024-01-01")
 
 def get_mapping(wrds_username=WRDS_USERNAME):
     """
-    Connects to a WRDS (Wharton Research Data Services) database and fetches bond data from Mergent
-    on the the table named `fisd_fisd`. The data fetched includes the date,
-    ticker, and parspread where the tenor is '5Y' and the country is 'United States'. The fetched data for each
-    year is stored in a dictionary with the year as the key. The function finally returns this dictionary.
+    Connects to a WRDS (Wharton Research Data Services) database and fetches data from Markit
+    from the table named `markit_red.redobllookup`. The data fetched includes the mapping between ISIN
+    and REDCODE for our bond&CDS pairs of interest.
 
     Returns:
         dict: A dictionary where each key is a year from 2001 to 2023 and each value is a DataFrame containing

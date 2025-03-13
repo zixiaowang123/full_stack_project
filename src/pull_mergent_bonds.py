@@ -43,10 +43,11 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
         offering_date, -- The date the issue was originally offered.
         maturity, -- Date that the issue's principal is due for repayment.
         amount_outstanding, -- The amount of the issue remaining outstanding.
-        isin, -- The International Securities Identification Number associated with this issue.
-        putable, -- Put option flag.
-        convertible, -- Flag indicating the issue can be converted to the common stock (or other security).
-        security_level -- SEN is Senior Unsecured Debt 
+        security_level, -- SENS is Senior Unsecured Debt i think
+        offering_yield, -- Yield to maturity at the time of issuance.
+        issuer_cusip, -- issuer CUSIP.
+        issue_cusip,
+        treasury_spread -- The difference between the yield of the benchmark treasury issue and the issue's offering yield expressed in basis points.
 
     FROM
         {table_name} AS a
@@ -54,7 +55,9 @@ def get_bond_data_as_dict(wrds_username=WRDS_USERNAME):
         (a.foreign_currency = 'N') AND
         (a.putable = 'N') AND
         (a.convertible = 'N') AND
-        (a.isin != '')
+        (a.isin != '') AND
+        (a.canadian = 'N') AND
+        (a.action_price > 0.5)
     """
     bond_data = db.raw_sql(query, date_cols=["date"])
     return bond_data
@@ -68,11 +71,13 @@ def filter_data(data):
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(',').str[0]
     bonds.loc[:,"maturity_time_frame"] = bonds.loc[:,"maturity_time_frame"].astype(str).str.split(' ').str[0]
     bonds.loc[:,"maturity_time_frame"] = pd.to_numeric(bonds.loc[:,"maturity_time_frame"], errors='coerce') / 365.25
-    more_bonds = bonds[bonds["maturity_time_frame"] >= 1]
-    more_bonds['maturity_time_frame'] = more_bonds['maturity_time_frame'].round().astype(int)
-    more_bonds = more_bonds[more_bonds['maturity_time_frame'] <= 10]
+    bonds = bonds.dropna(subset=['maturity_time_frame'])
+    bonds['maturity_time_frame'] = bonds['maturity_time_frame'].round().astype(int)
+    
+    mask_g1 = bonds["maturity_time_frame"] >= 1
+    mask_l10 = bonds['maturity_time_frame'] <= 10
 
-    return more_bonds
+    return bonds[mask_g1 & mask_l10]
 
 if __name__ == "__main__":
     combined_df = get_bond_data_as_dict(wrds_username=WRDS_USERNAME)
