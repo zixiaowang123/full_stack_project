@@ -550,10 +550,10 @@ def task_run_notebooks():
 def task_compile_latex_docs():
     """Compile the LaTeX documents to PDFs"""
     file_dep = [
-        "./reports/final_report.tex"
+        "./reports/final_report.tex",
     ]
     targets = [
-        "./reports/final_report.pdf"
+        "./reports/final_report.pdf",
     ]
 
     return {
