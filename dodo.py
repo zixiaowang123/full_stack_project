@@ -121,7 +121,7 @@ from settings import config
 ##################################
 ## Begin rest of PyDoit tasks here
 ##################################
-'''
+
 def task_config():
     """Create empty directories for data and output if they don't exist"""
     return {
@@ -238,7 +238,7 @@ def task_merge_cds_and_bonds():
         ],
         "file_dep": file_dep,
         "clean": []
-    }'''
+    }
 
 
 notebook_tasks = {
