@@ -189,9 +189,6 @@ def merge_treasuries_into_bonds(bond_df, treas_df, day_window=3):
 
     return merge_df
     
-
-
-
 def merge_red_code_into_bond_treas(bond_treas_df, red_c_df):
     '''
     bond_treas_df: dataframe containing the merged bond and treasury data
