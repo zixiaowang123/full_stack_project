@@ -48,39 +48,64 @@ def calc_cb_spread(df):
 
     return df
 
-def generate_graph(df, col='rfr'):
-    '''
-    df from previous function with the additonal columns
 
-    col is the value that is desired to be graphed
+def generate_graph(df, col='rfr', col2=None, two=False):
+    '''
+    Generates a time series plot for given columns based on bond ratings.
+    
+    Parameters:
+    - df: DataFrame containing financial data.
+    - col: Primary column to graph (default is 'rfr').
+    - col2: Secondary column to graph if two=True.
+    - two: Boolean flag indicating whether to plot a second column with a secondary axis.
     '''
     df['date'] = pd.to_datetime(df['date'])
 
-
-    # Compute the mean of the specified column per (date, rating) pair
+    # Compute the mean of the specified column(s) per (date, rating) pair
     df_grouped = df.groupby(['date', 'rating'])[col].mean().reset_index()
 
-    # Create the plot
-    plt.figure(figsize=(12, 6))
+    if two and col2 is not None:
+        df_grouped[col2] = df.groupby(['date', 'rating'])[col2].mean().reset_index()[col2]
 
-    # Plot for Investment Grade (IG) (rating = 0)
+    # Create the figure and primary axis
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # Plot for Investment Grade (IG) (rating = 0) on primary axis
     df_ig = df_grouped[df_grouped['rating'] == 0]
-    plt.plot(df_ig['date'], df_ig[col], label="IG (Investment Grade)", linestyle='-', marker='o')
+    ax1.plot(df_ig['date'], df_ig[col], label=f"IG - {col}", linestyle='-', marker='o', color='tab:blue')
 
-    # Plot for High Yield (HY) (rating = 1)
+    # Plot for High Yield (HY) (rating = 1) on primary axis
     df_hy = df_grouped[df_grouped['rating'] == 1]
-    plt.plot(df_hy['date'], df_hy[col], label="HY (High Yield)", linestyle='-', marker='s')
+    ax1.plot(df_hy['date'], df_hy[col], label=f"HY - {col}", linestyle='-', marker='s', color='tab:orange')
 
-    # Formatting the plot
-    plt.xlabel("Date")
-    plt.ylabel(col.replace("_", " ").title())  # Format y-label nicely
-    plt.title(f"{col.replace('_', ' ').title()} Over Time for IG and HY Bonds")
-    plt.xticks(rotation=45)
-    plt.legend()
-    plt.grid(True)
+    # Configure primary axis
+    ax1.set_xlabel("Date")
+    ax1.set_ylabel(f"{col} (Primary Axis)", color='tab:blue')
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax1.legend(loc='upper left')
+    ax1.grid(True)
 
+    # Add secondary axis if two=True and col2 is provided
+    if two and col2 is not None:
+        ax2 = ax1.twinx()  # Create secondary y-axis
+        
+        # Plot for Investment Grade (IG) (rating = 0) on secondary axis
+        ax2.plot(df_ig['date'], df_ig[col2], label=f"IG - {col2}", linestyle='--', marker='x', color='tab:green')
+        
+        # Plot for High Yield (HY) (rating = 1) on secondary axis
+        ax2.plot(df_hy['date'], df_hy[col2], label=f"HY - {col2}", linestyle='--', marker='d', color='tab:red')
+
+        # Configure secondary axis
+        ax2.set_ylabel(f"{col2} (Secondary Axis)", color='tab:green')
+        ax2.tick_params(axis='y', labelcolor='tab:green')
+        ax2.legend(loc='upper right')
+
+    # Set title
+    plt.title(f"Time Series Plot of {col}" + (f" and {col2}" if two and col2 is not None else ""))
+    
     # Show the plot
     plt.show()
+
     
 
 
