@@ -6,6 +6,7 @@ from datetime import date, datetime
 import datetime as datetime
 import numpy as np
 from process_final_product import *
+import os
 
 def test_calc_cb_spread():
     """
