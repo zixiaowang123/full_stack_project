@@ -7,6 +7,13 @@ import ctypes
 
 from settings import config
 
+'''
+merge bond data with treasury data via redcode
+
+- merge maturity dates table into treasury data
+- merge bond into redcode + treas...
+'''
+
 
 DATA_DIR = config("DATA_DIR")
 TREASURY_ISSUE_FILE_NAME = "issue_data.parquet"
@@ -253,7 +260,7 @@ def main():
     red_df = pd.read_parquet(f"{DATA_DIR}/{RED_CODE_FILE_NAME}")
 
     print("Generating Treasury data...")
-    treasury_data = generate_treasury_data(issue_df, treas_monthly_df)
+    treasury_data = merge_treasury_data(issue_df, treas_monthly_df)
     
     print("Merging Treasuries into Bonds...")
     bond_treas_df = merge_treasuries_into_bonds(bond_df, treasury_data, day_window=3)
@@ -262,7 +269,7 @@ def main():
     bond_red_df = merge_red_code_into_bond_treas(bond_treas_df, red_df)
 
     print("Saving processed data...")
-    bond_red_df.to_parquet(f"{DATA_DIR}/merged_bond_treas_red.parquet")
+    bond_red_df.to_parquet(f"{DATA_DIR}/merged_bond_treasuries_redcode.parquet")
 
     print("Processing complete. Data saved.")
 
